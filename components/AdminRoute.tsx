@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { onAuthStateChanged, auth } from '../src/firebase';
+import { onAuthStateChanged } from 'firebase/auth'; // Corrected import
+import { auth } from '../src/firebase'; // Corrected import
 import { getCurrentUserRole } from '../src/auth';
 import Spinner from './Spinner';
 import Layout from './Layout';
@@ -14,7 +15,7 @@ const AdminRoute: React.FC = () => {
             if (user) {
                 const role = await getCurrentUserRole();
                 setIsAdmin(role === 'admin');
-_            } else {
+            } else {
                 setIsAdmin(false);
             }
         });

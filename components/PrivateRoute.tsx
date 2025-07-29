@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { onAuthStateChanged, auth } from '../src/firebase';
+import { onAuthStateChanged } from 'firebase/auth'; // Corrected import
+import { auth } from '../src/firebase'; // Corrected import
 import Layout from './Layout';
 import Spinner from './Spinner';
 
