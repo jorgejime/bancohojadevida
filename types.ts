@@ -8,6 +8,8 @@ export interface ProfessionalExperience {
   endDate: string | null;
   isCurrent: boolean;
   description: string;
+  documentUrl?: string; // Add optional document URL field
+  documentName?: string; // Add optional document name field
 }
 
 export interface PersonalData {
@@ -29,6 +31,8 @@ export interface AcademicRecord {
     endDate: string | null;
     inProgress: boolean;
     description: string;
+    documentUrl?: string; // Add optional document URL field
+    documentName?: string; // Add optional document name field
 }
 
 export interface Language {

@@ -1,29 +1,31 @@
+
 import React, { useState, useEffect } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
+import { onAuthStateChanged, auth } from '../src/firebase';
 import { getCurrentUserRole } from '../src/auth';
 import Spinner from './Spinner';
+import Layout from './Layout';
 
-const AdminRoute = () => {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
+const AdminRoute: React.FC = () => {
+    const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    const checkAdminRole = async () => {
-      const role = await getCurrentUserRole();
-      if (role === 'admin') {
-        setIsAdmin(true);
-      }
-      setLoading(false);
-    };
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const role = await getCurrentUserRole();
+                setIsAdmin(role === 'admin');
+_            } else {
+                setIsAdmin(false);
+            }
+        });
+        return () => unsubscribe();
+    }, []);
 
-    checkAdminRole();
-  }, []);
+    if (isAdmin === null) {
+        return <Spinner />;
+    }
 
-  if (loading) {
-    return <Spinner />;
-  }
-
-  return isAdmin ? <Outlet /> : <Navigate to="/login" />;
+    return isAdmin ? <Layout><Outlet /></Layout> : <Navigate to="/login" replace />;
 };
 
 export default AdminRoute;

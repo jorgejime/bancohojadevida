@@ -1,12 +1,25 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { isAuthenticated } from '../auth';
-import Layout from './Layout';
 
-const PrivateRoute = (): React.ReactNode => {
-    // If authenticated, render the Layout which contains the Outlet for nested routes.
-    // Otherwise, redirect to the login page.
-    return isAuthenticated() ? <Layout /> : <Navigate to="/login" replace />;
+import React, { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
+import { onAuthStateChanged, auth } from '../src/firebase';
+import Layout from './Layout';
+import Spinner from './Spinner';
+
+const PrivateRoute: React.FC = () => {
+    const [isAuth, setIsAuth] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setIsAuth(!!user);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    if (isAuth === null) {
+        return <Spinner />;
+    }
+
+    return isAuth ? <Layout /> : <Navigate to="/login" replace />;
 };
 
 export default PrivateRoute;

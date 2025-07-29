@@ -1,20 +1,26 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { login } from '../auth';
+import { login } from '../src/auth';
 
-const Login = (): React.ReactNode => {
+const Login: React.FC = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        if (login(email, password)) {
+        setLoading(true);
+        try {
+            await login(email, password);
             navigate('/my-profile');
-        } else {
-            setError('Credenciales inválidas. Por favor, intente de nuevo.');
+        } catch (error: any) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -47,11 +53,19 @@ const Login = (): React.ReactNode => {
                             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         />
                     </div>
+                    <div className="flex items-center justify-between">
+                        <div className="text-sm">
+                            <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
+                                ¿Olvidaste tu contraseña?
+                            </Link>
+                        </div>
+                    </div>
                     <button
                         type="submit"
+                        disabled={loading}
                         className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
-                        Ingresar
+                        {loading ? 'Ingresando...' : 'Ingresar'}
                     </button>
                 </form>
                 <p className="text-sm text-center text-gray-600">

@@ -6,7 +6,6 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import MyProfile from './pages/MyProfile';
 import PrivateRoute from './components/PrivateRoute';
-import { isAuthenticated } from './auth';
 import PersonalData from './pages/PersonalData';
 import AcademicEducation from './pages/AcademicEducation';
 import Languages from './pages/Languages';
@@ -16,6 +15,7 @@ import Settings from './pages/Settings';
 import DocumentsPage from './pages/Documents';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminRoute from './components/AdminRoute';
+import ForgotPassword from './pages/ForgotPassword';
 
 function App(): React.ReactNode {
   return (
@@ -23,6 +23,7 @@ function App(): React.ReactNode {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         
         {/* Protected Routes */}
         <Route path="/" element={<PrivateRoute />}>
@@ -44,11 +45,7 @@ function App(): React.ReactNode {
             <Route index element={<AdminDashboard />} />
         </Route>
 
-        <Route path="*" element={
-          isAuthenticated() 
-            ? <Navigate to="/my-profile" />
-            : <Navigate to="/login" />
-        } />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </HashRouter>
   );
