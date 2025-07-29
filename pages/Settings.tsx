@@ -48,11 +48,7 @@ const SettingsPage = (): React.ReactNode => {
     };
     
     const handleDeleteAccount = () => {
-        if(window.confirm('¿ESTÁ ABSOLUTAMENTE SEGURO?\nEsta acción es irreversible y eliminará todos sus datos de forma permanente.')) {
-            if(window.confirm('CONFIRMACIÓN FINAL:\n¿Realmente desea eliminar su cuenta y todos sus datos?')) {
-                logout(); // Logout clears all data via auth.ts
-            }
-        }
+        logout(); // Logout clears all data via auth.ts
     };
 
 

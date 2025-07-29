@@ -1,34 +1,55 @@
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import app from './firebase';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { db } from './firebase'; // Import Firestore instance
 
-const auth = getAuth(app);
+const auth = getAuth();
 
-export const register = (email: string, password: string) => {
-  return createUserWithEmailAndPassword(auth, email, password);
-};
-
-export const login = (email: string, password: string) => {
-  return signInWithEmailAndPassword(auth, email, password);
-};
-
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom'; // Si usas React Router para navegación
-import app from './firebase';
-
-const auth = getAuth(app);
-
-export const register = (email: string, password: string) => {
-  return createUserWithEmailAndPassword(auth, email, password);
-};
-
-export const login = (email: string, password: string) => {
-  return signInWithEmailAndPassword(auth, email, password);
-};
-
-export const loginWithGoogle = (navigate) => {
-  const provider = new GoogleAuthProvider();
-  return signInWithPopup(auth, provider).then(() => {
-    // Redirige al dashboard después del login
-    navigate('/dashboard');
+export const register = async (email: string, password: string) => {
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  const user = userCredential.user;
+  
+  // After creating the user, create a document in Firestore to store jejich role
+  await setDoc(doc(db, "users", user.uid), {
+    email: user.email,
+    role: "user" // Default role
   });
+
+  return userCredential;
 };
+
+export const login = (email: string, password: string) => {
+  return signInWithEmailAndPassword(auth, email, password);
+};
+
+export const loginWithGoogle = () => {
+  const provider = new GoogleAuthProvider();
+  return signInWithPopup(auth, provider);
+};
+
+export const logout = () => {
+  return signOut(auth);
+};
+
+export const getCurrentUserRole = async (): Promise<string | null> => {
+  const user = auth.currentUser;
+  if (!user) return null;
+
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
+
+  if (userDoc.exists()) {
+    return userDoc.data().role;
+  }
+  
+  return null;
+};
+
+export const isAuthenticated = () => {
+    return auth.currentUser !== null;
+};
+
+export const getUserName = () => {
+    return auth.currentUser?.displayName || auth.currentUser?.email || 'Usuario';
+};
+
+export { onAuthStateChanged, auth };

@@ -28,10 +28,8 @@ const LanguagesPage = (): React.ReactNode => {
     };
 
     const handleDelete = async (id: string) => {
-        if (window.confirm('¿Está seguro de que desea eliminar este idioma?')) {
-            await db.deleteLanguage(id);
-            await loadLanguages();
-        }
+        await db.deleteLanguage(id);
+        await loadLanguages();
     };
 
     return (

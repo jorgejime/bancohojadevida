@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { ProfessionalExperience } from '../types';
 import * as db from '../database';
+import Icon from '../components/Icon';
+import Card from '../components/Card';
+import Spinner from '../components/Spinner';
 
-const PlusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>;
-const PencilIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z" /></svg>;
-const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>;
-
-// Form component defined within the same file for co-location of logic
 interface ExperienceFormProps {
     experience: ProfessionalExperience | null;
     onSave: (experience: Omit<ProfessionalExperience, 'id'>) => Promise<void>;
@@ -42,53 +40,52 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ experience, onSave, onC
     };
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">{experience ? 'Editar Experiencia' : 'Agregar Experiencia'}</h3>
+        <Card title={experience ? 'Editar Experiencia' : 'Agregar Experiencia'}>
             <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Empresa</label>
-                        <input type="text" name="company" value={formData.company} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
+                        <label className="block text-sm font-semibold text-gray-700">Empresa</label>
+                        <input type="text" name="company" value={formData.company} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Cargo</label>
-                        <input type="text" name="role" value={formData.role} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
+                        <label className="block text-sm font-semibold text-gray-700">Cargo</label>
+                        <input type="text" name="role" value={formData.role} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">País</label>
-                        <input type="text" name="country" value={formData.country} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
+                        <label className="block text-sm font-semibold text-gray-700">País</label>
+                        <input type="text" name="country" value={formData.country} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
                     </div>
                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Fecha de Inicio</label>
-                        <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
+                        <label className="block text-sm font-semibold text-gray-700">Fecha de Inicio</label>
+                        <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
                     </div>
                     <div className={formData.isCurrent ? 'opacity-50' : ''}>
-                        <label className="block text-sm font-medium text-gray-700">Fecha de Finalización</label>
-                        <input type="date" name="endDate" value={formData.endDate || ''} onChange={handleChange} disabled={formData.isCurrent} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+                        <label className="block text-sm font-semibold text-gray-700">Fecha de Finalización</label>
+                        <input type="date" name="endDate" value={formData.endDate || ''} onChange={handleChange} disabled={formData.isCurrent} className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" />
                     </div>
                     <div className="flex items-center mt-6">
                         <input id="isCurrent" name="isCurrent" type="checkbox" checked={formData.isCurrent} onChange={handleChange} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
                         <label htmlFor="isCurrent" className="ml-2 block text-sm text-gray-900">¿Es su trabajo actual?</label>
                     </div>
                 </div>
-                <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700">Descripción de funciones</label>
-                    <textarea name="description" value={formData.description} onChange={handleChange} rows={4} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
+                <div className="mt-6">
+                    <label className="block text-sm font-semibold text-gray-700">Descripción de funciones</label>
+                    <textarea name="description" value={formData.description} onChange={handleChange} rows={4} className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
                 </div>
-                 <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-800">
+                 <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-800 rounded-md">
                     <p className="font-bold">Información Importante</p>
                     <p className="text-sm">Por favor, ingrese información veraz y verificable. Se le podrán solicitar soportes que acrediten su experiencia.</p>
                 </div>
                 <div className="mt-6 flex justify-end space-x-3">
-                    <button type="button" onClick={onCancel} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    <button type="button" onClick={onCancel} className="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
                         Cancelar
                     </button>
-                    <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button type="submit" className="bg-blue-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
                         Guardar
                     </button>
                 </div>
             </form>
-        </div>
+        </Card>
     );
 };
 
@@ -100,30 +97,30 @@ const ExperienceCard: React.FC<{ experience: ProfessionalExperience; onEdit: (id
     };
 
     return (
-        <div className="bg-white p-5 rounded-lg shadow-md">
-            <div className="flex justify-between items-start">
-                <div>
-                    <h4 className="text-lg font-bold text-gray-800">{experience.role}</h4>
-                    <p className="text-md text-blue-600 font-semibold">{experience.company}</p>
-                    <p className="text-sm text-gray-500 mt-1">
-                        {formatDate(experience.startDate)} - {experience.isCurrent ? 'Presente' : formatDate(experience.endDate)}
-                        <span className="mx-2">·</span>
-                        {experience.country}
-                    </p>
-                </div>
-                <div className="flex space-x-2">
-                    <button onClick={() => onEdit(experience.id)} className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 rounded-full transition-colors"><PencilIcon /></button>
-                    <button onClick={() => onDelete(experience.id)} className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-100 rounded-full transition-colors"><TrashIcon /></button>
-                </div>
+        <Card title={experience.role} footer={(
+            <div className="flex justify-end space-x-2">
+                <button onClick={() => onEdit(experience.id)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-full transition-colors">
+                    <Icon name="user" className="h-5 w-5" />
+                </button>
+                <button onClick={() => onDelete(experience.id)} className="p-2 text-red-600 hover:bg-red-100 rounded-full transition-colors">
+                    <Icon name="user" className="h-5 w-5" />
+                </button>
             </div>
-            <p className="mt-3 text-gray-600 text-sm">{experience.description}</p>
+        )}>
+            <p className="text-md text-blue-600 font-semibold mb-1">{experience.company}</p>
+            <p className="text-sm text-gray-500">
+                {formatDate(experience.startDate)} - {experience.isCurrent ? 'Presente' : formatDate(experience.endDate)}
+                <span className="mx-2">·</span>
+                {experience.country}
+            </p>
+            <p className="mt-3 text-gray-700 text-sm leading-relaxed">{experience.description}</p>
             <div className="mt-4">
                 <button disabled className="text-sm bg-gray-200 text-gray-500 px-3 py-1 rounded-md cursor-not-allowed flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                    <Icon name="user" className="h-4 w-4 mr-2" />
                     Subir Soporte (Próximamente)
                 </button>
             </div>
-        </div>
+        </Card>
     );
 };
 
@@ -131,10 +128,18 @@ const ProfessionalExperiencePage = (): React.ReactNode => {
     const [experiences, setExperiences] = useState<ProfessionalExperience[]>([]);
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [editingExperience, setEditingExperience] = useState<ProfessionalExperience | null>(null);
-    
+    const [loading, setLoading] = useState(true);
+
     const loadExperiences = useCallback(async () => {
-        const data = await db.getProfessionalExperiences();
-        setExperiences(data);
+        setLoading(true);
+        try {
+            const data = await db.getProfessionalExperiences();
+            setExperiences(data);
+        } catch (error) {
+            console.error("Error loading professional experiences:", error);
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
     useEffect(() => {
@@ -155,10 +160,8 @@ const ProfessionalExperiencePage = (): React.ReactNode => {
     }, [experiences]);
 
     const handleDelete = useCallback(async (id: string) => {
-        if (window.confirm('¿Está seguro de que desea eliminar esta experiencia?')) {
-            await db.deleteProfessionalExperience(id);
-            await loadExperiences();
-        }
+        await db.deleteProfessionalExperience(id);
+        await loadExperiences();
     }, [loadExperiences]);
 
     const handleSave = useCallback(async (experienceData: Omit<ProfessionalExperience, 'id'>) => {
@@ -177,13 +180,17 @@ const ProfessionalExperiencePage = (): React.ReactNode => {
         setEditingExperience(null);
     }, []);
 
+    if (loading) {
+        return <Spinner />;
+    }
+
     return (
-        <div>
+        <div className="space-y-8">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">EXPERIENCIA PROFESIONAL</h2>
                 {!isFormVisible && (
-                    <button onClick={handleAddNew} className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        <PlusIcon />
+                    <button onClick={handleAddNew} className="flex items-center bg-blue-600 text-white px-5 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <Icon name="user" className="h-5 w-5 mr-2" />
                         Agregar Experiencia
                     </button>
                 )}
@@ -196,10 +203,10 @@ const ProfessionalExperiencePage = (): React.ReactNode => {
                     <ExperienceCard key={exp.id} experience={exp} onEdit={handleEdit} onDelete={handleDelete} />
                 ))}
                 {experiences.length === 0 && !isFormVisible && (
-                    <div className="text-center py-12 bg-white rounded-lg shadow-md">
-                        <p className="text-gray-500">Aún no has agregado ninguna experiencia profesional.</p>
-                        <p className="text-sm text-gray-400 mt-1">Haz clic en "Agregar Experiencia" para comenzar.</p>
-                    </div>
+                    <Card title="Sin Experiencia Profesional">
+                        <p className="text-gray-500 text-center py-4">Aún no has agregado ninguna experiencia profesional.</p>
+                        <p className="text-sm text-gray-400 text-center mt-1">Haz clic en "Agregar Experiencia" para comenzar.</p>
+                    </Card>
                 )}
             </div>
         </div>

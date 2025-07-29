@@ -27,10 +27,8 @@ const ToolManagementPage = (): React.ReactNode => {
     };
 
     const handleDelete = async (id: string) => {
-        if (window.confirm('¿Está seguro de que desea eliminar esta herramienta?')) {
-            await db.deleteTool(id);
-            await loadTools();
-        }
+        await db.deleteTool(id);
+        await loadTools();
     };
 
     const groupedTools = tools.reduce((acc, tool) => {

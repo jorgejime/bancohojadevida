@@ -13,6 +13,9 @@ import Languages from './pages/Languages';
 import ToolManagement from './pages/ToolManagement';
 import References from './pages/References';
 import Settings from './pages/Settings';
+import DocumentsPage from './pages/Documents';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminRoute from './components/AdminRoute';
 
 function App(): React.ReactNode {
   return (
@@ -32,7 +35,13 @@ function App(): React.ReactNode {
           <Route path="/languages" element={<Languages />} />
           <Route path="/tool-management" element={<ToolManagement />} />
           <Route path="/references" element={<References />} />
+          <Route path="/documents" element={<DocumentsPage />} />
           <Route path="/settings" element={<Settings />} />
+        </Route>
+
+        {/* Admin Protected Routes */}
+        <Route path="/admin" element={<AdminRoute />}>
+            <Route index element={<AdminDashboard />} />
         </Route>
 
         <Route path="*" element={

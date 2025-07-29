@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Match the path for user-specific documents
+    match /users/{userId}/documents/{fileName} {
+      // Allow read and delete only by the authenticated user who owns the files
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+
+      // Allow write (create) only if the user is authenticated,
+      // the file is a PDF, and the size is less than 5MB.
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType == 'application/pdf';
+    }
+  }
+}

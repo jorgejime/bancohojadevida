@@ -1,145 +1,178 @@
+import { db } from './src/firebase';
+import { collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, query } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import type { PersonalData, ProfessionalExperience, AcademicRecord, Language, Tool, Reference, UserSettings } from './types';
 
-const DB_PREFIX = 'usm_cv_bank_';
-
-// Helper to get and parse data from localStorage
-const get = async <T>(key: string, defaultValue: T): Promise<T> => {
-    try {
-        const value = localStorage.getItem(DB_PREFIX + key);
-        return value ? JSON.parse(value) : defaultValue;
-    } catch (error) {
-        console.error(`Error reading from localStorage key "${key}":`, error);
-        return defaultValue;
-    }
-};
-
-// Helper to set and stringify data to localStorage
-const set = async <T>(key: string, value: T): Promise<void> => {
-    try {
-        localStorage.setItem(DB_PREFIX + key, JSON.stringify(value));
-    } catch (error) {
-        console.error(`Error writing to localStorage key "${key}":`, error);
-    }
+// Helper to get the current user's UID
+const getCurrentUserId = (): string | null => {
+    const auth = getAuth();
+    return auth.currentUser ? auth.currentUser.uid : null;
 };
 
 // --- Personal Data ---
-const PERSONAL_DATA_KEY = 'personal_data';
-export const getPersonalData = () => get<PersonalData>(PERSONAL_DATA_KEY, { fullName: '', email: '', phone: '', address: '', city: '', country: '', summary: '' });
-export const savePersonalData = (data: PersonalData) => set(PERSONAL_DATA_KEY, data);
+export const getPersonalData = async (): Promise<PersonalData> => {
+    const userId = getCurrentUserId();
+    if (!userId) throw new Error("User not authenticated");
+    const docRef = doc(db, 'users', userId, 'data', 'personal');
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap.data() as PersonalData : { fullName: '', email: '', phone: '', address: '', city: '', country: '', summary: '' };
+};
+
+export const savePersonalData = async (data: PersonalData) => {
+    const userId = getCurrentUserId();
+    if (!userId) throw new Error("User not authenticated");
+    const docRef = doc(db, 'users', userId, 'data', 'personal');
+    await setDoc(docRef, data, { merge: true });
+};
 
 // --- Professional Experience ---
-const EXPERIENCES_KEY = 'professional_experiences';
-export const getProfessionalExperiences = () => get<ProfessionalExperience[]>(EXPERIENCES_KEY, []);
+const getExperiencesCollection = () => {
+    const userId = getCurrentUserId();
+    if (!userId) throw new Error("User not authenticated");
+    return collection(db, 'users', userId, 'professional_experiences');
+};
+
+export const getProfessionalExperiences = async (): Promise<ProfessionalExperience[]> => {
+    const q = query(getExperiencesCollection());
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProfessionalExperience));
+};
 
 export const addProfessionalExperience = async (experience: Omit<ProfessionalExperience, 'id'>) => {
-    const experiences = await getProfessionalExperiences();
-    const newExperience = { ...experience, id: Date.now().toString() };
-    await set(EXPERIENCES_KEY, [newExperience, ...experiences]);
+    await addDoc(getExperiencesCollection(), experience);
 };
 
 export const updateProfessionalExperience = async (updatedExperience: ProfessionalExperience) => {
-    const experiences = await getProfessionalExperiences();
-    const updatedList = experiences.map(exp => exp.id === updatedExperience.id ? updatedExperience : exp);
-    await set(EXPERIENCES_KEY, updatedList);
+    const { id, ...data } = updatedExperience;
+    const docRef = doc(db, 'users', getCurrentUserId()!, 'professional_experiences', id);
+    await updateDoc(docRef, data);
 };
 
 export const deleteProfessionalExperience = async (id: string) => {
-    const experiences = await getProfessionalExperiences();
-    const updatedList = experiences.filter(exp => exp.id !== id);
-    await set(EXPERIENCES_KEY, updatedList);
+    const docRef = doc(db, 'users', getCurrentUserId()!, 'professional_experiences', id);
+    await deleteDoc(docRef);
 };
 
 // --- Academic Records ---
-const ACADEMIC_KEY = 'academic_records';
-export const getAcademicRecords = () => get<AcademicRecord[]>(ACADEMIC_KEY, []);
+const getAcademicCollection = () => {
+    const userId = getCurrentUserId();
+    if (!userId) throw new Error("User not authenticated");
+    return collection(db, 'users', userId, 'academic_records');
+};
+
+export const getAcademicRecords = async (): Promise<AcademicRecord[]> => {
+    const q = query(getAcademicCollection());
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AcademicRecord));
+};
 
 export const addAcademicRecord = async (record: Omit<AcademicRecord, 'id'>) => {
-    const records = await getAcademicRecords();
-    const newRecord = { ...record, id: Date.now().toString() };
-    await set(ACADEMIC_KEY, [newRecord, ...records]);
+    await addDoc(getAcademicCollection(), record);
 };
 
 export const updateAcademicRecord = async (updatedRecord: AcademicRecord) => {
-    const records = await getAcademicRecords();
-    const updatedList = records.map(rec => rec.id === updatedRecord.id ? updatedRecord : rec);
-    await set(ACADEMIC_KEY, updatedList);
+    const { id, ...data } = updatedRecord;
+    const docRef = doc(db, 'users', getCurrentUserId()!, 'academic_records', id);
+    await updateDoc(docRef, data);
 };
 
 export const deleteAcademicRecord = async (id: string) => {
-    const records = await getAcademicRecords();
-    const updatedList = records.filter(rec => rec.id !== id);
-    await set(ACADEMIC_KEY, updatedList);
+    const docRef = doc(db, 'users', getCurrentUserId()!, 'academic_records', id);
+    await deleteDoc(docRef);
 };
 
 // --- Languages ---
-const LANGUAGES_KEY = 'languages';
-export const getLanguages = () => get<Language[]>(LANGUAGES_KEY, []);
+const getLanguagesCollection = () => {
+    const userId = getCurrentUserId();
+    if (!userId) throw new Error("User not authenticated");
+    return collection(db, 'users', userId, 'languages');
+};
+
+export const getLanguages = async (): Promise<Language[]> => {
+    const q = query(getLanguagesCollection());
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Language));
+};
 
 export const addLanguage = async (language: Omit<Language, 'id'>) => {
-    const languages = await getLanguages();
-    const newLanguage = { ...language, id: Date.now().toString() };
-    await set(LANGUAGES_KEY, [...languages, newLanguage]);
+    await addDoc(getLanguagesCollection(), language);
 };
 
 export const deleteLanguage = async (id: string) => {
-    const languages = await getLanguages();
-    const updatedList = languages.filter(lang => lang.id !== id);
-    await set(LANGUAGES_KEY, updatedList);
+    const docRef = doc(db, 'users', getCurrentUserId()!, 'languages', id);
+    await deleteDoc(docRef);
 };
 
-
 // --- Tools ---
-const TOOLS_KEY = 'tools';
-export const getTools = () => get<Tool[]>(TOOLS_KEY, []);
+const getToolsCollection = () => {
+    const userId = getCurrentUserId();
+    if (!userId) throw new Error("User not authenticated");
+    return collection(db, 'users', userId, 'tools');
+};
+
+export const getTools = async (): Promise<Tool[]> => {
+    const q = query(getToolsCollection());
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Tool));
+};
 
 export const addTool = async (tool: Omit<Tool, 'id'>) => {
-    const tools = await getTools();
-    const newTool = { ...tool, id: Date.now().toString() };
-    await set(TOOLS_KEY, [...tools, newTool]);
+    await addDoc(getToolsCollection(), tool);
 };
 
 export const deleteTool = async (id: string) => {
-    const tools = await getTools();
-    const updatedList = tools.filter(t => t.id !== id);
-    await set(TOOLS_KEY, updatedList);
+    const docRef = doc(db, 'users', getCurrentUserId()!, 'tools', id);
+    await deleteDoc(docRef);
 };
 
 // --- References ---
-const REFERENCES_KEY = 'references';
-export const getReferences = () => get<Reference[]>(REFERENCES_KEY, []);
+const getReferencesCollection = () => {
+    const userId = getCurrentUserId();
+    if (!userId) throw new Error("User not authenticated");
+    return collection(db, 'users', userId, 'references');
+};
+
+export const getReferences = async (): Promise<Reference[]> => {
+    const q = query(getReferencesCollection());
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Reference));
+};
 
 export const addReference = async (reference: Omit<Reference, 'id'>) => {
-    const references = await getReferences();
-    const newReference = { ...reference, id: Date.now().toString() };
-    await set(REFERENCES_KEY, [newReference, ...references]);
+    await addDoc(getReferencesCollection(), reference);
 };
 
 export const updateReference = async (updatedReference: Reference) => {
-    const references = await getReferences();
-    const updatedList = references.map(r => r.id === updatedReference.id ? updatedReference : r);
-    await set(REFERENCES_KEY, updatedList);
+    const { id, ...data } = updatedReference;
+    const docRef = doc(db, 'users', getCurrentUserId()!, 'references', id);
+    await updateDoc(docRef, data);
 };
 
 export const deleteReference = async (id: string) => {
-    const references = await getReferences();
-    const updatedList = references.filter(r => r.id !== id);
-    await set(REFERENCES_KEY, updatedList);
+    const docRef = doc(db, 'users', getCurrentUserId()!, 'references', id);
+    await deleteDoc(docRef);
 };
-
 
 // --- Settings ---
-const SETTINGS_KEY = 'user_settings';
-export const getSettings = () => get<UserSettings>(SETTINGS_KEY, { notifications: { newOpportunities: true } });
-export const saveSettings = (settings: UserSettings) => set(SETTINGS_KEY, settings);
-
-
-// --- Clear All Data ---
-export const clearAllData = () => {
-    // This is a bit brute-force but effective for this mock setup.
-    // In a real app, you'd iterate through keys or have a user-specific object to delete.
-    Object.keys(localStorage).forEach(key => {
-        if (key.startsWith(DB_PREFIX)) {
-            localStorage.removeItem(key);
-        }
-    });
+export const getSettings = async (): Promise<UserSettings> => {
+    const userId = getCurrentUserId();
+    if (!userId) throw new Error("User not authenticated");
+    const docRef = doc(db, 'users', userId, 'data', 'settings');
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap.data() as UserSettings : { notifications: { newOpportunities: true } };
 };
+
+export const saveSettings = async (settings: UserSettings) => {
+    const userId = getCurrentUserId();
+    if (!userId) throw new Error("User not authenticated");
+    const docRef = doc(db, 'users', userId, 'data', 'settings');
+    await setDoc(docRef, settings, { merge: true });
+};
+
+// --- Clear All Data (Not recommended for Firestore, handle deletion server-side or with care) ---
+export const clearAllData = () => {
+    console.warn("clearAllData is not implemented for Firestore and should be handled with care, possibly in a server-side environment.");
+    // In a real app, you might have a cloud function to delete user data.
+    // For now, this function does nothing to prevent accidental data loss.
+};
+
